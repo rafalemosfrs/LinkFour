@@ -15,6 +15,10 @@ const SECRET_KEY = process.env.JWT_SECRET || 'fallbacksecretkey';
 app.use(cors());
 app.use(express.json());
 
+app.get('/health', async (req, res) => {
+  res.status(200).json({ message: "API is running" });
+});
+
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
