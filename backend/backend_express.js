@@ -153,6 +153,26 @@ app.get('/users/:userId/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// 📄 Rota protegida para buscar links do usuário autenticado
+app.get('/users/:userId/links', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+
+  if (req.user.userId !== parseInt(userId)) {
+    return res.status(403).json({ message: 'Acesso negado.' });
+  }
+
+  try {
+    const linksResult = await pool.query(
+      'SELECT id, title, url, platform FROM Links WHERE user_id = $1',
+      [userId]
+    );
+    res.json(linksResult.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ➕ Rota protegida para adicionar link para um usuário
 app.post('/users/:userId/links', authenticateToken, async (req, res) => {
   const { userId } = req.params;
@@ -160,11 +180,12 @@ app.post('/users/:userId/links', authenticateToken, async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO Links (user_id, title, url, platform) VALUES ($1, $2, $3, $4) RETURNING *',
+      'INSERT INTO links (user_id, title, url, platform) VALUES ($1, $2, $3, $4) RETURNING *',
       [userId, title, url, platform]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    console.error('Erro ao adicionar link:', err);
     res.status(500).json({ error: err.message });
   }
 });
