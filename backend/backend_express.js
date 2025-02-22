@@ -15,14 +15,13 @@ const SECRET_KEY = process.env.JWT_SECRET || 'fallbacksecretkey';
 app.use(cors());
 app.use(express.json());
 
-// 💡 Configuração do pool do PostgreSQL usando DATABASE_URL
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  host: 'db.cqvvxthwyzltxsugsrhb.supabase.co',
-  query_timeout: 5000, // Timeout para evitar travamento
-  keepAlive: true,     // Mantém a conexão ativa
-  connectionTimeoutMillis: 10000, // Timeout na conexão inicial
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: Number(process.env.DB_PORT),
+  ssl: { rejectUnauthorized: false }
 });
 
 // 🛠️ Teste de conexão com o banco
@@ -57,7 +56,7 @@ app.post('/register', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO Users (email, password) VALUES ($1, $2) RETURNING *',
+      'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *',
       [email, hashedPassword]
     );
     res.status(201).json(result.rows[0]);
